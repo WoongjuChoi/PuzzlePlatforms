@@ -13,5 +13,17 @@ UCLASS()
 class PUZZLEPLATFORMS_API AMovingPlatform : public AStaticMeshActor
 {
 	GENERATED_BODY()
-	
+
+public:
+	AMovingPlatform();
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+
+public:
+	UPROPERTY(EditAnywhere)
+	float MoveSpeed = 20.f;
+
+	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = true))
+	FVector TargetLocation;
 };
