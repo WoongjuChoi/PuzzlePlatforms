@@ -24,4 +24,8 @@ public:
 
 	UFUNCTION(Exec)
 	void Join(const FString& Address);
+
+private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> MenuClass;
 };
