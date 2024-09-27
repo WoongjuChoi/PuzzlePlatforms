@@ -29,4 +29,9 @@ void UPuzzlePlatformsGameInstance::Host()
 void UPuzzlePlatformsGameInstance::Join(const FString& Address)
 {
 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
+
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (PlayerController == nullptr) return;
+
+	PlayerController->ClientTravel(Address, TRAVEL_Absolute);
 }
