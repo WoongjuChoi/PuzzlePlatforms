@@ -20,6 +20,24 @@ void UPuzzlePlatformsGameInstance::Init()
 	UE_LOG(LogTemp, Warning, TEXT("Found Class %s"), *MenuClass->GetName());
 }
 
+void UPuzzlePlatformsGameInstance::LoadMenu()
+{
+	if (MenuClass == nullptr) return;
+
+	UUserWidget* Menu = CreateWidget<UUserWidget>(this, MenuClass);
+	if (Menu == nullptr) return;
+
+	Menu->AddToViewport();
+
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (PlayerController == nullptr) return;
+	
+	FInputModeUIOnly InputMode;
+	PlayerController->SetInputMode(InputMode);
+
+	PlayerController->bShowMouseCursor = true;
+}
+
 void UPuzzlePlatformsGameInstance::Host()
 {
 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("Hosting"));

@@ -19,6 +19,9 @@ public:
 
 	virtual void Init();
 
+	UFUNCTION(BlueprintCallable)
+	void LoadMenu();
+
 	UFUNCTION(Exec) // Exec을 사용하면 함수 이름으로 콘솔 명령어창에서 호출이 가능하다. PlayerController와 
 	void Host();
 
