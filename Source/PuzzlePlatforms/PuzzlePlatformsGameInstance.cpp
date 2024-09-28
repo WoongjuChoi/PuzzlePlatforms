@@ -4,6 +4,7 @@
 #include "PuzzlePlatformsGameInstance.h"
 
 #include "Blueprint/UserWidget.h"
+#include "MenuSystem/MainMenu.h"
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer& ObjectInitializer)
 {
@@ -24,10 +25,11 @@ void UPuzzlePlatformsGameInstance::LoadMenu()
 {
 	if (MenuClass == nullptr) return;
 
-	UUserWidget* Menu = CreateWidget<UUserWidget>(this, MenuClass);
+	UMainMenu* Menu = CreateWidget<UMainMenu>(this, MenuClass);
 	if (Menu == nullptr) return;
 
 	Menu->AddToViewport();
+	Menu->SetMenuInterface(this);
 
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	if (PlayerController == nullptr) return;
