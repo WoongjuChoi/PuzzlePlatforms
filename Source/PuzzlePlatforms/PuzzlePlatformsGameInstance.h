@@ -32,4 +32,7 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> MenuClass;
+	
+	UPROPERTY()
+	class UMainMenu* Menu;
 };

@@ -25,23 +25,21 @@ void UPuzzlePlatformsGameInstance::LoadMenu()
 {
 	if (MenuClass == nullptr) return;
 
-	UMainMenu* Menu = CreateWidget<UMainMenu>(this, MenuClass);
+	Menu = CreateWidget<UMainMenu>(this, MenuClass);
 	if (Menu == nullptr) return;
 
-	Menu->AddToViewport();
+	Menu->Setup();
 	Menu->SetMenuInterface(this);
-
-	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (PlayerController == nullptr) return;
-	
-	FInputModeUIOnly InputMode;
-	PlayerController->SetInputMode(InputMode);
-
-	PlayerController->bShowMouseCursor = true;
 }
 
 void UPuzzlePlatformsGameInstance::Host()
 {
+	// if (Menu != nullptr)
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("TearDown"));
+	// 	Menu->TearDown();
+	// }
+	//
 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("Hosting"));
 
 	UWorld* World = GetWorld();
