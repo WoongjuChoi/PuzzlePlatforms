@@ -7,27 +7,6 @@
 #include "Components/EditableTextBox.h"
 #include "Components/WidgetSwitcher.h"
 
-void UMainMenu::SetMenuInterface(IMenuInterface* Interface)
-{
-	MenuInterface = Interface;
-}
-
-void UMainMenu::Setup()
-{
-	AddToViewport();
-
-	UWorld* World = GetWorld();
-	if (World == nullptr) return;
-	
-	APlayerController* PlayerController = World->GetFirstPlayerController();
-	if (PlayerController == nullptr) return;
-	
-	FInputModeUIOnly InputMode;
-	PlayerController->SetInputMode(InputMode);
-
-	PlayerController->bShowMouseCursor = true;
-}
-
 bool UMainMenu::Initialize()
 {
 	bool Success = Super::Initialize();
@@ -46,26 +25,6 @@ bool UMainMenu::Initialize()
 	ConfirmJoinMenuButton->OnClicked.AddDynamic(this, &UMainMenu::JoinServer);
 	
 	return true;
-}
-
-void UMainMenu::NativeDestruct()
-{
-	Super::NativeDestruct();
-	
-	UE_LOG(LogTemp, Warning, TEXT("NativeDestruct"));
-	
-	RemoveFromParent();
-
-	UWorld* World = GetWorld();
-	if (World == nullptr) return;
-	
-	APlayerController* PlayerController = World->GetFirstPlayerController();
-	if (PlayerController == nullptr) return;
-	
-	FInputModeGameOnly InputMode;
-	PlayerController->SetInputMode(InputMode);
-
-	PlayerController->bShowMouseCursor = false;
 }
 
 void UMainMenu::HostServer()

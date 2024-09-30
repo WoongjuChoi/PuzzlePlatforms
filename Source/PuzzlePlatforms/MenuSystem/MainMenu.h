@@ -4,26 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "MenuInterface.h"
-#include "Blueprint/UserWidget.h"
+#include "MenuWidget.h"
 #include "MainMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PUZZLEPLATFORMS_API UMainMenu : public UUserWidget
+class PUZZLEPLATFORMS_API UMainMenu : public UMenuWidget
 {
 	GENERATED_BODY()
-
-public:
-	void SetMenuInterface(IMenuInterface* Interface);
-
-	void Setup();
 	
 protected:
 	virtual bool Initialize() override;
-
-	virtual void NativeDestruct() override;
 	
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -61,6 +54,4 @@ private:
 
 	UFUNCTION()
 	void OpenMainMenu();
-
-	IMenuInterface* MenuInterface;
 };

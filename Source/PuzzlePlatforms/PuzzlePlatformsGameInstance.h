@@ -23,16 +23,27 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadMenu();
 
+	UFUNCTION(BlueprintCallable)
+	void InGameLoadMenu();
+
 	UFUNCTION(Exec) // Exec을 사용하면 함수 이름으로 콘솔 명령어창에서 호출이 가능하다. PlayerController와 
 	virtual void Host() override;
 
 	UFUNCTION(Exec)
 	virtual void Join(const FString& Address) override;
 
+	virtual void LoadMainMenu() override;
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> MenuClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> InGameMenuClass;
 	
 	UPROPERTY()
 	class UMainMenu* Menu;
+	
+	UPROPERTY()
+	class UInGameMenu* InGameMenu;
 };
