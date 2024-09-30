@@ -34,12 +34,6 @@ void UPuzzlePlatformsGameInstance::LoadMenu()
 
 void UPuzzlePlatformsGameInstance::Host()
 {
-	// if (Menu != nullptr)
-	// {
-	// 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("TearDown"));
-	// 	Menu->TearDown();
-	// }
-	//
 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("Hosting"));
 
 	UWorld* World = GetWorld();

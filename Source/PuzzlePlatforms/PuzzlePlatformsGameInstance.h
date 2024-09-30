@@ -27,7 +27,7 @@ public:
 	virtual void Host() override;
 
 	UFUNCTION(Exec)
-	void Join(const FString& Address);
+	virtual void Join(const FString& Address) override;
 
 private:
 	UPROPERTY(EditAnywhere)
