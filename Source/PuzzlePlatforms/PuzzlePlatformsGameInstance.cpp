@@ -3,6 +3,8 @@
 
 #include "PuzzlePlatformsGameInstance.h"
 
+#include "OnlineSubsystem.h"
+#include "OnlineSessionSettings.h"
 #include "InGameMenu.h"
 #include "Blueprint/UserWidget.h"
 #include "MenuSystem/MainMenu.h"
@@ -24,13 +26,26 @@ void UPuzzlePlatformsGameInstance::Init()
 {
 	Super::Init();
 
-	UE_LOG(LogTemp, Warning, TEXT("Found Class %s"), *MenuClass->GetName());
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	if (OnlineSubsystem != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found subsystem %s"), *OnlineSubsystem->GetSubsystemName().ToString());
+		SessionInterface = OnlineSubsystem->GetSessionInterface();
+		if (SessionInterface.IsValid())
+		{
+			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found no subsystem"));
+	}
 }
 
-void UPuzzlePlatformsGameInstance::LoadMenu()
+void UPuzzlePlatformsGameInstance::LoadMenuWidget()
 {
 	if (MenuClass == nullptr) return;
-
+ 
 	Menu = CreateWidget<UMainMenu>(this, MenuClass);
 	if (Menu == nullptr) return;
 
@@ -51,12 +66,10 @@ void UPuzzlePlatformsGameInstance::InGameLoadMenu()
 
 void UPuzzlePlatformsGameInstance::Host()
 {
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("Hosting"));
-
-	UWorld* World = GetWorld();
-	if (World != nullptr)
+	if (SessionInterface.IsValid())
 	{
-		World->ServerTravel("/Game/ThirdPerson/Maps/ThirdPersonMap?listen");
+		FOnlineSessionSettings SessionSettings;
+		SessionInterface->CreateSession(0, TEXT("My Session Game"), SessionSettings);
 	}
 }
 
@@ -76,4 +89,21 @@ void UPuzzlePlatformsGameInstance::LoadMainMenu()
 	if (PlayerController == nullptr) return;
 
 	PlayerController->ClientTravel("/Game/MenuSystem/MainMenu", ETravelType::TRAVEL_Absolute);
+}
+
+void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool Success)
+{
+	if (Success == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not create session"));
+		return;
+	}
+	
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, TEXT("Hosting"));
+
+	UWorld* World = GetWorld();
+	if (World != nullptr)
+	{
+		World->ServerTravel("/Game/ThirdPerson/Maps/ThirdPersonMap?listen");
+	}
 }
