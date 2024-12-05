@@ -9,6 +9,8 @@
 #include "Blueprint/UserWidget.h"
 #include "MenuSystem/MainMenu.h"
 
+const static FName SESSION_NAME = TEXT("My Session Game");
+
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer& ObjectInitializer)
 {
 	static ConstructorHelpers::FClassFinder<UUserWidget> MenuBPClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/MenuSystem/WBP_MainMenu.WBP_MainMenu_C'"));
@@ -34,6 +36,7 @@ void UPuzzlePlatformsGameInstance::Init()
 		if (SessionInterface.IsValid())
 		{
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
+			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
 		}
 	}
 	else
@@ -44,10 +47,12 @@ void UPuzzlePlatformsGameInstance::Init()
 
 void UPuzzlePlatformsGameInstance::LoadMenuWidget()
 {
-	if (MenuClass == nullptr) return;
+	if (MenuClass == nullptr)
+		return;
  
 	Menu = CreateWidget<UMainMenu>(this, MenuClass);
-	if (Menu == nullptr) return;
+	if (Menu == nullptr)
+		return;
 
 	Menu->Setup();
 	Menu->SetMenuInterface(this);
@@ -68,8 +73,15 @@ void UPuzzlePlatformsGameInstance::Host()
 {
 	if (SessionInterface.IsValid())
 	{
-		FOnlineSessionSettings SessionSettings;
-		SessionInterface->CreateSession(0, TEXT("My Session Game"), SessionSettings);
+		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
+		if (ExistingSession == nullptr)
+		{
+			CreateSession();
+		}
+		else
+		{
+			SessionInterface->DestroySession(SESSION_NAME);
+		}
 	}
 }
 
@@ -106,4 +118,24 @@ void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bo
 	{
 		World->ServerTravel("/Game/ThirdPerson/Maps/ThirdPersonMap?listen");
 	}
+}
+
+void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, bool Success)
+{
+	if (Success == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not destroy session"));
+		return;
+	}
+	
+	CreateSession();
+}
+
+void UPuzzlePlatformsGameInstance::CreateSession()
+{
+	if (SessionInterface.IsValid() == false)
+		return;
+	
+	FOnlineSessionSettings SessionSettings;
+	SessionInterface->CreateSession(0, SESSION_NAME , SessionSettings);
 }
