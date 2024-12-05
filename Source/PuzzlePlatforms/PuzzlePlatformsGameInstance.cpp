@@ -37,6 +37,15 @@ void UPuzzlePlatformsGameInstance::Init()
 		{
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnFindSessionComplete);
+
+			SessionSearch = MakeShareable(new FOnlineSessionSearch);
+			if (SessionSearch.IsValid())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Starting Find Session"));
+				
+				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+			}
 		}
 	}
 	else
@@ -131,11 +140,20 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 	CreateSession();
 }
 
+void UPuzzlePlatformsGameInstance::OnFindSessionComplete(bool Success)
+{
+	if (Success == false)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("FindSessionComplete!"));
+}
+
 void UPuzzlePlatformsGameInstance::CreateSession()
 {
 	if (SessionInterface.IsValid() == false)
 		return;
 	
 	FOnlineSessionSettings SessionSettings;
+	SessionSettings.bIsLANMatch = true; // 같은 컴퓨터에 있더라도 로컬 네트워크를 통해 검색하기 위함
 	SessionInterface->CreateSession(0, SESSION_NAME , SessionSettings);
 }
