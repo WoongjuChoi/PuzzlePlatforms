@@ -35,6 +35,8 @@ public:
 
 	virtual void LoadMainMenu() override;
 
+	virtual void RefreshServerList() override;
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> MenuClass;

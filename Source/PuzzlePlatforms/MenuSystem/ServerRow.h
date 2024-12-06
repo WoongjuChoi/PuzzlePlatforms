@@ -13,5 +13,24 @@ UCLASS()
 class PUZZLEPLATFORMS_API UServerRow : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* ServerName;
+
+	void SetUp(class UMainMenu* InParent, uint32 InIndex);
+
+protected:
+	virtual void NativeConstruct() override;
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	class UButton* RowButton;
+
+	UPROPERTY()
+	TObjectPtr<class UMainMenu> Parent;
+	uint32 Index;
+
+	UFUNCTION()
+	void OnClicked();
 };
