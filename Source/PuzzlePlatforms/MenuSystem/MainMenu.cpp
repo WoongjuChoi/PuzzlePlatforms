@@ -3,10 +3,19 @@
 
 #include "MainMenu.h"
 
+#include "ServerRow.h"
 #include "Components/Button.h"
-#include "Components/EditableTextBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/KismetSystemLibrary.h"
+
+UMainMenu::UMainMenu()
+{
+	ConstructorHelpers::FClassFinder<UUserWidget> ServerRowBPClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/MenuSystem/WBP_ServerRow.WBP_ServerRow_C'"));
+	if (ensure(ServerRowBPClass.Class != nullptr) == false)
+		return;
+
+	ServerRowClass = ServerRowBPClass.Class;
+}
 
 bool UMainMenu::Initialize()
 {
@@ -40,12 +49,29 @@ void UMainMenu::HostServer()
 
 void UMainMenu::JoinServer()
 {
-	if (MenuInterface == nullptr) return;
-	if (IPAddressField == nullptr) return;
-
+	if (MenuInterface == nullptr)
+		return;
 	
-	const FString& Address = IPAddressField->GetText().ToString();
-	MenuInterface->Join(Address);
+	// if (IPAddressField == nullptr) return;
+	//
+	//
+	// const FString& Address = IPAddressField->GetText().ToString();
+	// MenuInterface->Join(Address);
+
+	UWorld* World = GetWorld();
+	if (ensure(World != nullptr) == false)
+		return;
+
+	if (ensure(ServerRowClass != nullptr) == false)
+		return;
+
+	UServerRow* Row = CreateWidget<UServerRow>(World, ServerRowClass);
+	if (ensure(Row != nullptr) == false)
+		return;
+	if (ensure(ServerList != nullptr) == false)
+		return;
+
+	ServerList->AddChild(Row);
 }
 
 void UMainMenu::OpenJoinMenu()
