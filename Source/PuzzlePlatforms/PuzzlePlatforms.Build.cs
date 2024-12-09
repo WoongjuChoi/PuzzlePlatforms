@@ -18,7 +18,8 @@ public class PuzzlePlatforms : ModuleRules
             "InputCore", 
             "EnhancedInput", 
             "UMG",
-			"OnlineSubsystem"
+			"OnlineSubsystem",
+			"OnlineSubsystemSteam"
 		});
 	}
 }
