@@ -8,6 +8,7 @@
 #include "InGameMenu.h"
 #include "Blueprint/UserWidget.h"
 #include "MenuSystem/MainMenu.h"
+#include "Online/OnlineSessionNames.h"
 
 const static FName SESSION_NAME = TEXT("My Session Game");
 
@@ -122,7 +123,9 @@ void UPuzzlePlatformsGameInstance::RefreshServerList()
 	if (SessionSearch.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Starting Find Session"));
-		SessionSearch->bIsLanQuery = true; 
+		SessionSearch->bIsLanQuery = false;
+		SessionSearch->MaxSearchResults = 100;
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 				
 		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 	}
@@ -179,8 +182,13 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 		return;
 	
 	FOnlineSessionSettings SessionSettings;
-	SessionSettings.bIsLANMatch = true; // LAN에서만 탐색 가능
+	SessionSettings.bIsLANMatch = false; // LAN매칭을 제외하고 세션 생성
 	SessionSettings.NumPublicConnections = 2; // 최대 2명의 플레이어가 접속 가능
 	SessionSettings.bShouldAdvertise = true; // 세션 광고 여부. true이면 이 세션은 네트워크 상에서 검색 및 탐색이 가능해진다.
+	SessionSettings.bUsesPresence = true; // 이 옵션이 true이면 로비 세션을 생성하고, false이면 인터넷 세션을 생성한다. 프레젠스를 사용하는 설정.
+	SessionSettings.bUseLobbiesIfAvailable = true; // 온라인 서비스(스팀 등)에서 로비 기능이 지원되는 경우 이를 사용할지 여부.
+	SessionSettings.bAllowJoinViaPresence = true; // 지역제한을 호스트의 지역으로 제한하는 옵션.
+	SessionSettings.bAllowJoinInProgress = true; // 세션을 생성한 후 시작하기 전까지의 상태에서도 Join이 가능하도록 하는 옵션.
+	SessionSettings.bIsDedicated = false; // 데디케이트 서버인지 여부
 	SessionInterface->CreateSession(0, SESSION_NAME , SessionSettings);
 }
