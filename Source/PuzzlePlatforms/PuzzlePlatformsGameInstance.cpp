@@ -41,8 +41,7 @@ void UPuzzlePlatformsGameInstance::Init()
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnDestroySessionComplete);
 			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnFindSessionComplete);
-
-			
+			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UPuzzlePlatformsGameInstance::OnJoinSessionComplete);
 		}
 	}
 	else
@@ -93,19 +92,16 @@ void UPuzzlePlatformsGameInstance::Host()
 	}
 }
 
-void UPuzzlePlatformsGameInstance::Join(const FString& Address)
+void UPuzzlePlatformsGameInstance::Join(uint32 Index)
 {
+	if (SessionInterface.IsValid() == false)
+		return;
+	if (SessionSearch.IsValid() == false)
+		return;
 	if (IsValid(Menu) == false)
 		return;
 
-	Menu->SetServerList({"Test1", "Test2"});
-	
-	// GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
-	//
-	// APlayerController* PlayerController = GetFirstLocalPlayerController();
-	// if (PlayerController == nullptr) return;
-	//
-	// PlayerController->ClientTravel(Address, TRAVEL_Absolute);
+	SessionInterface->JoinSession(0, SESSION_NAME, SessionSearch->SearchResults[Index]);
 }
 
 void UPuzzlePlatformsGameInstance::LoadMainMenu()
@@ -165,18 +161,42 @@ void UPuzzlePlatformsGameInstance::OnFindSessionComplete(bool Success)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finished Find Session"));
 
-		TArray<FString> ServerNames;
-		ServerNames.Add("Test Server 1");
-		ServerNames.Add("Test Server 2");
-		ServerNames.Add("Test Server 3");
+		TArray<FServerData> ServerNames;
 		for (const  FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Found session names : %s"), *SearchResult.GetSessionIdStr());
-			ServerNames.Add(SearchResult.GetSessionIdStr());
+
+			FServerData Data;
+			Data.Name = SearchResult.GetSessionIdStr();
+			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
+			Data.CurrentPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections; // NumOpenPublicConnections는 사용 가능한 (비어있는) 연결 수 
+			Data.HostUserName = SearchResult.Session.OwningUserName;
+			ServerNames.Add(Data);
 		}
 
 		Menu->SetServerList(ServerNames);
 	}
+}
+
+void UPuzzlePlatformsGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	if (SessionInterface.IsValid() == false)
+		return;
+	
+	FString Address;
+	if (SessionInterface->GetResolvedConnectString(SessionName, Address) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Could not get connect string."));
+		return;
+	}
+	
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
+	
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (PlayerController == nullptr)
+		return;
+	
+	PlayerController->ClientTravel(Address, TRAVEL_Absolute);
 }
 
 void UPuzzlePlatformsGameInstance::CreateSession()
@@ -185,7 +205,16 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 		return;
 	
 	FOnlineSessionSettings SessionSettings;
-	SessionSettings.bIsLANMatch = false; // LAN매칭을 제외하고 세션 생성
+
+	if (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
+	{
+		SessionSettings.bIsLANMatch = true;
+	}
+	else
+	{
+		SessionSettings.bIsLANMatch = false; // LAN매칭을 제외하고 세션 생성
+	}
+	
 	SessionSettings.NumPublicConnections = 2; // 최대 2명의 플레이어가 접속 가능
 	SessionSettings.bShouldAdvertise = true; // 세션 광고 여부. true이면 이 세션은 네트워크 상에서 검색 및 탐색이 가능해진다.
 	SessionSettings.bUsesPresence = true; // 이 옵션이 true이면 로비 세션을 생성하고, false이면 인터넷 세션을 생성한다. 프레젠스를 사용하는 설정.

@@ -18,7 +18,7 @@ UMainMenu::UMainMenu()
 	ServerRowClass = ServerRowBPClass.Class;
 }
 
-void UMainMenu::SetServerList(TArray<FString> ServerNames)
+void UMainMenu::SetServerList(TArray<FServerData> ServerData)
 {
 	UWorld* World = GetWorld();
 	if (ensure(World != nullptr) == false)
@@ -27,7 +27,7 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 	ServerList->ClearChildren();
 
 	uint32 i = 0;
-	for (const FString& ServerName : ServerNames)
+	for (const FServerData& Data : ServerData)
 	{
 		if (ensure(ServerRowClass != nullptr) == false)
 			return;
@@ -38,7 +38,10 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 		if (ensure(ServerList != nullptr) == false)
 			return;
 
-		Row->ServerName->SetText(FText::FromString(ServerName));
+		Row->ServerName->SetText(FText::FromString(Data.Name));
+		Row->HostUser->SetText(FText::FromString(Data.HostUserName));
+		FString FractionText = FString::Printf(TEXT("%d/%d"), Data.CurrentPlayers, Data.MaxPlayers);
+		Row->ConnectionFraction->SetText(FText::FromString(FractionText));
 		Row->SetUp(this, i);
 		++i;
 
@@ -97,21 +100,15 @@ void UMainMenu::HostServer()
 
 void UMainMenu::JoinServer()
 {
-	if (SelectedIndex.IsSet())
+	if (SelectedIndex.IsSet() && MenuInterface != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Selected index %d."), SelectedIndex.GetValue());
+		MenuInterface->Join(SelectedIndex.GetValue());
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Selected index not set."));
 	}
-	
-	if (MenuInterface == nullptr)
-		return;
-	
-	// if (IPAddressField == nullptr) return;
-	// const FString& Address = IPAddressField->GetText().ToString();
-	MenuInterface->Join("");
 }
 
 void UMainMenu::OpenJoinMenu()
