@@ -5,6 +5,7 @@
 
 #include "ServerRow.h"
 #include "Components/Button.h"
+#include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -70,21 +71,35 @@ void UMainMenu::UpdateChildren()
 bool UMainMenu::Initialize()
 {
 	bool Success = Super::Initialize();
-	if (Success == false) return false;
+	if (Success == false)
+		return false;
 
-	if (HostButton == nullptr) return false;
-	HostButton->OnClicked.AddDynamic(this, &UMainMenu::HostServer);
+	if (HostButton == nullptr)
+		return false;
+	HostButton->OnClicked.AddDynamic(this, &UMainMenu::OpenHostMenu);
 
-	if (JoinButton == nullptr) return false;
+	if (JoinButton == nullptr)
+		return false;
 	JoinButton->OnClicked.AddDynamic(this, &UMainMenu::OpenJoinMenu);
 
-	if (CancelJoinMenuButton == nullptr) return false;
+	if (CancelJoinMenuButton == nullptr)
+		return false;
 	CancelJoinMenuButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
 
-	if (ConfirmJoinMenuButton == nullptr) return false;
+	if (ConfirmJoinMenuButton == nullptr)
+		return false;
 	ConfirmJoinMenuButton->OnClicked.AddDynamic(this, &UMainMenu::JoinServer);
 
-	if (QuitButton == nullptr) return false;
+	if (ConfirmHostMenuButton == nullptr)
+		return false;
+	ConfirmHostMenuButton->OnClicked.AddDynamic(this, &UMainMenu::HostServer);
+
+	if (CancelHostMenuButton == nullptr)
+		return false;
+	CancelHostMenuButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
+
+	if (QuitButton == nullptr)
+		return false;
 	QuitButton->OnClicked.AddDynamic(this, &UMainMenu::Quit);
 	
 	return true;
@@ -95,7 +110,8 @@ void UMainMenu::HostServer()
 	if (MenuInterface == nullptr)
 		return;
 
-	MenuInterface->Host();
+	FString ServerName = ServerHostName->GetText().ToString();
+	MenuInterface->Host(ServerName);
 }
 
 void UMainMenu::JoinServer()
@@ -134,6 +150,16 @@ void UMainMenu::OpenMainMenu()
 		return;
 
 	MenuSwitcher->SetActiveWidget(MainMenu);
+}
+
+void UMainMenu::OpenHostMenu()
+{
+	if (MenuSwitcher == nullptr)
+		return;
+	if (HostMenu == nullptr)
+		return;
+
+	MenuSwitcher->SetActiveWidget(HostMenu);
 }
 
 void UMainMenu::Quit()

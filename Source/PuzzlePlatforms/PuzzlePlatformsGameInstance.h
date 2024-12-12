@@ -28,7 +28,7 @@ public:
 	void InGameLoadMenu();
 
 	UFUNCTION(Exec) // Exec을 사용하면 함수 이름으로 콘솔 명령어창에서 호출이 가능하다. PlayerController와 
-	virtual void Host() override;
+	virtual void Host(FString ServerName) override;
 
 	UFUNCTION(Exec)
 	virtual void Join(uint32 Index) override;
@@ -52,6 +52,8 @@ private:
 
 	IOnlineSessionPtr SessionInterface;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
+	FString DesiredServerName;
 	
 	void OnCreateSessionComplete(FName SessionName, bool Success);
 	void OnDestroySessionComplete(FName SessionName, bool Success);

@@ -11,6 +11,7 @@
 #include "Online/OnlineSessionNames.h"
 
 const static FName SESSION_NAME = TEXT("My Session Game");
+const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer& ObjectInitializer)
 {
@@ -76,8 +77,9 @@ void UPuzzlePlatformsGameInstance::InGameLoadMenu()
 	InGameMenu->SetMenuInterface(this);
 }
 
-void UPuzzlePlatformsGameInstance::Host()
+void UPuzzlePlatformsGameInstance::Host(FString ServerName)
 {
+	DesiredServerName = ServerName;
 	if (SessionInterface.IsValid())
 	{
 		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
@@ -167,10 +169,18 @@ void UPuzzlePlatformsGameInstance::OnFindSessionComplete(bool Success)
 			UE_LOG(LogTemp, Warning, TEXT("Found session names : %s"), *SearchResult.GetSessionIdStr());
 
 			FServerData Data;
-			Data.Name = SearchResult.GetSessionIdStr();
 			Data.MaxPlayers = SearchResult.Session.SessionSettings.NumPublicConnections;
 			Data.CurrentPlayers = Data.MaxPlayers - SearchResult.Session.NumOpenPublicConnections; // NumOpenPublicConnections는 사용 가능한 (비어있는) 연결 수 
 			Data.HostUserName = SearchResult.Session.OwningUserName;
+			FString ServerName;
+			if (SearchResult.Session.SessionSettings.Get(SERVER_NAME_SETTINGS_KEY, ServerName))
+			{
+				Data.Name = ServerName;
+			}
+			else
+			{
+				Data.Name = "Could not find name.";
+			}
 			ServerNames.Add(Data);
 		}
 
@@ -222,5 +232,10 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 	SessionSettings.bAllowJoinViaPresence = true; // 지역제한을 호스트의 지역으로 제한하는 옵션.
 	SessionSettings.bAllowJoinInProgress = true; // 세션을 생성한 후 시작하기 전까지의 상태에서도 Join이 가능하도록 하는 옵션.
 	SessionSettings.bIsDedicated = false; // 데디케이트 서버인지 여부
+
+	SessionSettings.Set(SERVER_NAME_SETTINGS_KEY, DesiredServerName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+	UE_LOG(LogTemp, Warning, TEXT("CreateSession"));
+	
 	SessionInterface->CreateSession(0, SESSION_NAME , SessionSettings);
 }
